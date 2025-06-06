@@ -5,12 +5,14 @@ import { useChat } from "ai/react";
 import { useState } from "react";
 import type { FormEvent, ReactNode } from "react";
 import { toast } from "sonner";
+import { readStreamableValue } from "ai/rsc";
 import { StickToBottom, useStickToBottomContext } from "use-stick-to-bottom";
 
 import { ChatMessageBubble } from "@/components/ChatMessageBubble";
 import { IntermediateStep } from "./IntermediateStep";
 import { Button } from "./ui/button";
-import { ArrowDown, LoaderCircle, Paperclip } from "lucide-react";
+import { analyzeToxicity } from "@/app/ai_sdk/tools/toxicity";
+import { ArrowDown, LoaderCircle, Paperclip, AlertTriangle } from "lucide-react";
 import { Checkbox } from "./ui/checkbox";
 import { UploadDocumentsForm } from "./UploadDocumentsForm";
 import {
@@ -178,6 +180,10 @@ export function ChatWindow(props: {
   );
   const [intermediateStepsLoading, setIntermediateStepsLoading] =
     useState(false);
+  const [toxicityAnalysisLoading, setToxicityAnalysisLoading] = useState(false);
+  const [toxicityResult, setToxicityResult] = useState<any>(null);
+
+  console.log(toxicityResult);
 
   const [sourcesForMessages, setSourcesForMessages] = useState<
     Record<string, any>
@@ -205,6 +211,42 @@ export function ChatWindow(props: {
         description: e.message,
       }),
   });
+
+  async function analyzeChatInput() {
+    if (chat.isLoading || intermediateStepsLoading || toxicityAnalysisLoading || !chat.input) return;
+
+    setToxicityAnalysisLoading(true);
+    setToxicityResult(null);
+
+    try {
+      const { streamData } = await analyzeToxicity(chat.input);
+
+      console.log({ streamData });
+
+      for await (const item of readStreamableValue(streamData)) {
+        setToxicityResult(item);
+
+        // Show a toast notification with the result
+        if (item?.toxicity) {
+          const toxicityScore = item.toxicity.find((r: any) => r.label === "toxic")?.score || 0;
+          const isToxic = toxicityScore > 0.5;
+
+          toast.info(`Toxicity Analysis Result`, {
+            description: isToxic 
+              ? `The text is potentially toxic (${(toxicityScore * 100).toFixed(2)}% confidence)` 
+              : `The text is not toxic (${((1 - toxicityScore) * 100).toFixed(2)}% confidence)`,
+            duration: 5000,
+          });
+        }
+      }
+    } catch (error) {
+      toast.error(`Error analyzing toxicity`, {
+        description: error instanceof Error ? error.message : "Unknown error occurred",
+      });
+    } finally {
+      setToxicityAnalysisLoading(false);
+    }
+  }
 
   async function sendMessage(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -334,6 +376,20 @@ export function ChatWindow(props: {
               </DialogContent>
             </Dialog>
           )}
+
+          {/* Toxicity Analysis Button */}
+          <Button
+            variant="ghost"
+            className="pl-2 pr-3"
+            onClick={analyzeChatInput}
+            disabled={!chat.input || chat.isLoading || intermediateStepsLoading || toxicityAnalysisLoading}
+          >
+            <AlertTriangle className="size-4" />
+            <span>Analyze Toxicity</span>
+            {toxicityAnalysisLoading && (
+              <LoaderCircle className="ml-2 h-4 w-4 animate-spin" />
+            )}
+          </Button>
 
           {props.showIntermediateStepsToggle && (
             <div className="flex items-center gap-2">

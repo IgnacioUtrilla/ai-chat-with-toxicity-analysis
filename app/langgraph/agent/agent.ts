@@ -6,7 +6,7 @@ import {
 } from "@langchain/langgraph";
 import { ChatOpenAI } from "@langchain/openai";
 
-const llm = new ChatOpenAI({ model: "gpt-4o-mini", temperature: 0 });
+const llm = new ChatOpenAI({ model: "gpt-4o-mini", temperature: 0.5 });
 
 const builder = new StateGraph(
   Annotation.Root({
@@ -19,8 +19,10 @@ const builder = new StateGraph(
       {
         type: "system",
         content:
-          "You are a pirate named Patchy. " +
-          "All responses must be extremely verbose and in pirate dialect.",
+          "You are a professional psychologist named Pedro. " +
+          "All responses must be concise, empathetic, and professional. " +
+          "Focus on providing clear, evidence-based guidance while showing understanding of the user's concerns. " +
+          "Avoid unnecessary verbosity and maintain a supportive, therapeutic tone.",
       },
       ...state.messages,
     ]);

@@ -11,6 +11,7 @@ use cases. Specifically:
 - [Answering complex, multi-step questions with agents](/app/api/chat/agents/route.ts)
 - [Retrieval augmented generation (RAG) with a chain and a vector store](/app/api/chat/retrieval/route.ts)
 - [Retrieval augmented generation (RAG) with an agent and a vector store](/app/api/chat/retrieval_agents/route.ts)
+- [Toxicity analysis using Hugging Face's roberta_toxicity_classifier model](/app/ai_sdk/tools/toxicity.ts)
 
 Most of them use Vercel's [AI SDK](https://github.com/vercel-labs/ai) to stream tokens to the client and display the incoming messages.
 
@@ -76,6 +77,20 @@ The retrieval examples both use Supabase as a vector store. However, you can swa
 [another supported vector store](https://js.langchain.com/docs/integrations/vectorstores) if preferred by changing
 the code under `app/api/retrieval/ingest/route.ts`, `app/api/chat/retrieval/route.ts`, and `app/api/chat/retrieval_agents/route.ts`.
 
+## 🛡️ Toxicity Analysis
+
+This template includes a toxicity analysis feature that uses Hugging Face's `s-nlp/roberta_toxicity_classifier` model to analyze text for toxicity. To use this feature:
+
+1. Get a Hugging Face API token from [Hugging Face](https://huggingface.co/settings/tokens)
+2. Add your token to the `.env.local` file:
+   ```
+   HUGGINGFACE_API_TOKEN="your-huggingface-api-token"
+   ```
+3. In the chat interface, type some text and click the "Analyze Toxicity" button (with the alert triangle icon)
+4. The system will analyze the text and display a notification with the toxicity score
+
+This feature demonstrates how to integrate external AI models with the chat interface and can be extended to include other types of analysis or AI tools.
+
 For Supabase, follow [these instructions](https://js.langchain.com/docs/integrations/vectorstores/supabase) to set up your
 database, then get your database URL and private key and paste them into `.env.local`.
 
@@ -127,3 +142,4 @@ Check out the [Next.js deployment documentation](https://nextjs.org/docs/deploym
 
 Thanks for reading! If you have any questions or comments, reach out to us on Twitter
 [@LangChainAI](https://twitter.com/langchainai), or [click here to join our Discord server](https://discord.gg/langchain).
+# ai-chat-with-toxicity-analysis

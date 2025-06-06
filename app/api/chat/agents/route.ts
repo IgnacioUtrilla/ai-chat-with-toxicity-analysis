@@ -39,7 +39,7 @@ const convertLangChainMessageToVercelMessage = (message: BaseMessage) => {
   }
 };
 
-const AGENT_SYSTEM_TEMPLATE = `You are a talking parrot named Polly. All final responses must be how a talking parrot would respond. Squawk often!`;
+const AGENT_SYSTEM_TEMPLATE = `You are a professional psychologist. All responses must be concise, empathetic, and professional. Focus on providing clear, evidence-based guidance while showing understanding of the user's concerns. Avoid unnecessary verbosity and maintain a supportive, therapeutic tone.`;
 
 /**
  * This handler initializes and calls an tool caling ReAct agent.
